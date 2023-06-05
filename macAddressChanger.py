@@ -14,10 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import re
 import subprocess
-from argparse import ArgumentParser, Namespace, ArgumentTypeError
-import os
+from argparse import ArgumentParser
+
 
 # Options that can be used when macAddressChanger is launched.
 def get_terminal_arguments():
