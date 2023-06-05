@@ -19,7 +19,7 @@ import subprocess
 from argparse import ArgumentParser, Namespace, ArgumentTypeError
 import os
 
-
+# Options that can be used when macAddressChanger is launched.
 def get_terminal_arguments():
     parser = ArgumentParser(prog="macAddressChanger.py", description="Tool to change the MAC address of an interface.")
     parser.add_argument("-i", "--interface", help="Interface to change the MAC address.")
@@ -30,13 +30,16 @@ def get_terminal_arguments():
         return parser.parse_args()
 
 
+# Change MAC address
 def change_mac_address(interface, mac_address):
     print("[+] MAC address for '" + interface + "' gets altered to " + mac_address + ".")
     subprocess.run(["ip", "link", "set", "dev", interface, "down"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     subprocess.run(["ip", "link", "set", "dev", interface, "address", mac_address],
                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    subprocess.run(["ip", "link", "set", "dev", interface, "up"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
+# Receive information of all interfaces
 def get_ip_info():
     popen_result = subprocess.Popen(["ip", "address", "show"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     popen_result.wait()
@@ -44,6 +47,7 @@ def get_ip_info():
     return ip_result, ip_errors
 
 
+# Get MAC address of interface
 def get_mac_address(interface):
     ip_result, ip_errors = get_ip_info()
     pattern = interface + r":.*? (\w\w(:\w\w){5}.*?)"
@@ -51,6 +55,7 @@ def get_mac_address(interface):
     return mac_address[0][0]
 
 
+# Find out if MAC address of the interface is correct
 def mac_address_exists(interface, mac_address):
     if get_mac_address(interface) == mac_address:
         return True
@@ -60,14 +65,13 @@ def mac_address_exists(interface, mac_address):
 
 arguments = get_terminal_arguments()
 if arguments.mac is None or arguments.interface is None:
-    print("Enter 'python macAddressChanger.py --help' for further information!")
+    print("Enter './python macAddressChanger.py --help' for further information!")
     exit(-1)
 
-
-print("The MAC address before changed is " + get_mac_address(arguments.interface))
+print("The MAC address before changed is " + get_mac_address(arguments.interface) + ".")
 change_mac_address(arguments.interface, arguments.mac)
 
 if mac_address_exists(arguments.interface, arguments.mac):
-    print("[+] MAC was successfully changed to " + arguments.mac)
+    print("[+] MAC was successfully changed to " + arguments.mac + ".")
 else:
     print("[-] MAC address could not be changed!")
